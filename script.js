@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
         taskItem.appendChild(span);
         taskItem.appendChild(buttonDiv);
 
-        return taskItem;
+        return { taskItem, completeBtn, deleteBtn };
     };
 
     // Charge les tâches depuis localStorage au démarrage
@@ -39,16 +39,16 @@ document.addEventListener('DOMContentLoaded', () => {
             taskList.innerHTML = '';
 
             tasks.forEach(task => {
-                const taskItem = createTaskElement(task.text, task.completed);
+                const { taskItem, completeBtn, deleteBtn } = createTaskElement(task.text, task.completed);
                 taskList.appendChild(taskItem);
 
-                taskItem.querySelector('.complete-btn').addEventListener('click', () => {
+                completeBtn.addEventListener('click', () => {
                     task.completed = !task.completed;
                     saveTasks();
                     taskItem.classList.toggle('completed');
                 });
 
-                taskItem.querySelector('.delete-btn').addEventListener('click', () => {
+                deleteBtn.addEventListener('click', () => {
                     const index = tasks.indexOf(task);
                     tasks.splice(index, 1);
                     saveTasks();
@@ -83,10 +83,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Ajouter une tâche
     const addTask = () => {
         const taskText = taskInput.value.trim();
-        if (taskText === '') {
-            // Message d'erreur visuel
+        if (taskText === '' || taskText.length > 500) {
             taskInput.style.borderColor = '#ff4444';
-            taskInput.placeholder = 'Veuillez entrer une tâche !';
+            taskInput.placeholder = taskText === '' ? 'Veuillez entrer une tâche !' : 'Tâche trop longue (max 500 caractères)';
+            if (taskText.length > 500) taskInput.value = '';
             setTimeout(() => {
                 taskInput.style.borderColor = '#ddd';
                 taskInput.placeholder = 'Ajouter une tâche...';
@@ -94,18 +94,17 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Utilisation de la fonction réutilisable
-        const taskItem = createTaskElement(taskText);
+        const { taskItem, completeBtn, deleteBtn } = createTaskElement(taskText);
         taskList.appendChild(taskItem);
         taskInput.value = '';
         saveTasks();
 
-        taskItem.querySelector('.complete-btn').addEventListener('click', () => {
+        completeBtn.addEventListener('click', () => {
             taskItem.classList.toggle('completed');
             saveTasks();
         });
 
-        taskItem.querySelector('.delete-btn').addEventListener('click', () => {
+        deleteBtn.addEventListener('click', () => {
             taskItem.remove();
             saveTasks();
         });
